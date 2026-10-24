@@ -1,7 +1,7 @@
 
---// CONTROL CENTER | Unified Dark UI
---// Run as a LocalScript inside a Roblox experience you own
---// All pages share one window and one floating toggle button.
+--// MILLER PANEL | CONTROL CENTER
+--// Developer: Miller
+--// Status: Script Under Testing
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -9,14 +9,17 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Remove previous copy if the script is run again
+--==================================================
+-- REMOVE OLD GUI
+--==================================================
+
 local oldGui = playerGui:FindFirstChild("ControlPanelGui")
 if oldGui then
     oldGui:Destroy()
 end
 
 --==================================================
--- CONFIGURATION
+-- COLORS
 --==================================================
 
 local COLORS = {
@@ -33,6 +36,10 @@ local COLORS = {
     Muted      = Color3.fromRGB(145, 155, 175),
     Border     = Color3.fromRGB(47, 55, 75),
 }
+
+--==================================================
+-- UI HELPERS
+--==================================================
 
 local function new(className, props, parent)
     local obj = Instance.new(className)
@@ -81,7 +88,7 @@ local function makeButton(parent, text, size, position, color)
         BackgroundColor3 = color or COLORS.Card,
         Text = text,
         TextColor3 = COLORS.Text,
-        TextSize = 13,
+        TextSize = 12,
         Font = Enum.Font.GothamSemibold,
         AutoButtonColor = true,
         BorderSizePixel = 0,
@@ -92,7 +99,7 @@ local function makeButton(parent, text, size, position, color)
 end
 
 --==================================================
--- GUI ROOT
+-- MAIN GUI
 --==================================================
 
 local gui = new("ScreenGui", {
@@ -102,18 +109,18 @@ local gui = new("ScreenGui", {
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 }, playerGui)
 
--- One unified window
+-- Compact unified window
 local window = new("Frame", {
     Name = "MainWindow",
-    Size = UDim2.fromOffset(570, 390),
-    Position = UDim2.new(0.5, -285, 0.5, -195),
+    Size = UDim2.fromOffset(520, 360),
+    Position = UDim2.new(0.5, -260, 0.5, -180),
     BackgroundColor3 = COLORS.Background,
     BorderSizePixel = 0,
     ClipsDescendants = true,
     Visible = true,
 }, gui)
 
-round(window, 15)
+round(window, 14)
 outline(window, COLORS.Border)
 
 --==================================================
@@ -122,30 +129,43 @@ outline(window, COLORS.Border)
 
 local topbar = new("Frame", {
     Name = "TopBar",
-    Size = UDim2.new(1, 0, 0, 48),
+    Size = UDim2.new(1, 0, 0, 44),
     BackgroundColor3 = COLORS.Panel,
     BorderSizePixel = 0,
 }, window)
 
-local accentLine = new("Frame", {
+new("Frame", {
     Size = UDim2.new(1, 0, 0, 2),
     Position = UDim2.new(0, 0, 1, -2),
     BackgroundColor3 = COLORS.Accent,
     BorderSizePixel = 0,
 }, topbar)
 
-label(topbar, "◆", UDim2.fromOffset(25, 30),
-    UDim2.fromOffset(15, 8), 18, COLORS.Accent)
+label(
+    topbar, "◆",
+    UDim2.fromOffset(22, 28),
+    UDim2.fromOffset(12, 7),
+    16, COLORS.Accent
+)
 
-label(topbar, "CONTROL CENTER",
-    UDim2.fromOffset(210, 30),
-    UDim2.fromOffset(43, 8), 15, COLORS.Text)
+label(
+    topbar, "MILLER PANEL",
+    UDim2.fromOffset(175, 28),
+    UDim2.fromOffset(37, 7),
+    14, COLORS.Text
+)
 
-label(topbar, "UNIFIED INTERFACE",
-    UDim2.fromOffset(150, 25),
-    UDim2.new(1, -180, 0, 11), 10, COLORS.Muted)
+label(
+    topbar, "DEVELOPED BY MILLER",
+    UDim2.fromOffset(160, 24),
+    UDim2.new(1, -172, 0, 9),
+    9, COLORS.Muted
+)
 
--- Drag the entire window by its top bar
+--==================================================
+-- WINDOW DRAGGING
+--==================================================
+
 local dragging = false
 local dragStart
 local startPosition
@@ -165,6 +185,7 @@ UserInputService.InputChanged:Connect(function(input)
         input.UserInputType == Enum.UserInputType.MouseMovement
         or input.UserInputType == Enum.UserInputType.Touch
     ) then
+
         local delta = input.Position - dragStart
 
         window.Position = UDim2.new(
@@ -179,6 +200,7 @@ end)
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
+
         dragging = false
     end
 end)
@@ -189,50 +211,69 @@ end)
 
 local sidebar = new("Frame", {
     Name = "Sidebar",
-    Position = UDim2.fromOffset(0, 48),
-    Size = UDim2.new(0, 145, 1, -48),
+    Position = UDim2.fromOffset(0, 44),
+    Size = UDim2.new(0, 132, 1, -44),
     BackgroundColor3 = COLORS.Sidebar,
     BorderSizePixel = 0,
 }, window)
 
-label(sidebar, "WORKSPACE",
-    UDim2.new(1, -24, 0, 25),
-    UDim2.fromOffset(13, 12), 10, COLORS.Muted)
+label(
+    sidebar, "WORKSPACE",
+    UDim2.new(1, -20, 0, 22),
+    UDim2.fromOffset(11, 10),
+    9, COLORS.Muted
+)
 
 local homeTab = makeButton(
-    sidebar, "⌂   الرئيسية",
-    UDim2.new(1, -18, 0, 39),
-    UDim2.fromOffset(9, 43), COLORS.Accent
+    sidebar, "⌂  الرئيسية",
+    UDim2.new(1, -16, 0, 36),
+    UDim2.fromOffset(8, 38),
+    COLORS.Accent
 )
 
 local playerTab = makeButton(
-    sidebar, "◉   صفحة اللاعب",
-    UDim2.new(1, -18, 0, 39),
-    UDim2.fromOffset(9, 89), COLORS.Card
+    sidebar, "◉  صفحة اللاعب",
+    UDim2.new(1, -16, 0, 36),
+    UDim2.fromOffset(8, 80),
+    COLORS.Card
 )
 
-local separator = new("Frame", {
-    Size = UDim2.new(1, -24, 0, 1),
-    Position = UDim2.fromOffset(12, 142),
+new("Frame", {
+    Size = UDim2.new(1, -20, 0, 1),
+    Position = UDim2.fromOffset(10, 128),
     BackgroundColor3 = COLORS.Border,
     BorderSizePixel = 0,
 }, sidebar)
 
-label(sidebar, "CONTROL PANEL",
-    UDim2.new(1, -24, 0, 24),
-    UDim2.fromOffset(13, 155), 9, COLORS.Muted)
+label(
+    sidebar, "DEVELOPER",
+    UDim2.new(1, -20, 0, 20),
+    UDim2.fromOffset(11, 139),
+    9, COLORS.Muted
+)
 
 local statusDot = new("Frame", {
     Size = UDim2.fromOffset(7, 7),
-    Position = UDim2.fromOffset(14, 190),
+    Position = UDim2.fromOffset(12, 171),
     BackgroundColor3 = COLORS.Green,
     BorderSizePixel = 0,
 }, sidebar)
+
 round(statusDot, 5)
 
-label(sidebar, "واجهة جاهزة",
-    UDim2.new(1, -35, 0, 22),
-    UDim2.fromOffset(28, 182), 10, COLORS.Muted)
+label(
+    sidebar, "المطور ميلر",
+    UDim2.new(1, -30, 0, 22),
+    UDim2.fromOffset(24, 163),
+    10, COLORS.Text
+)
+
+label(
+    sidebar, "سكربت تحت الاختبار",
+    UDim2.new(1, -18, 0, 35),
+    UDim2.fromOffset(10, 190),
+    9, COLORS.Accent
+)
 
 --==================================================
 -- PAGE CONTAINER
@@ -240,8 +281,8 @@ label(sidebar, "واجهة جاهزة",
 
 local content = new("Frame", {
     Name = "PageContainer",
-    Position = UDim2.fromOffset(145, 48),
-    Size = UDim2.new(1, -145, 1, -48),
+    Position = UDim2.fromOffset(132, 44),
+    Size = UDim2.new(1, -132, 1, -44),
     BackgroundTransparency = 1,
     BorderSizePixel = 0,
 }, window)
@@ -266,8 +307,11 @@ local function switchPage(pageName)
     homePage.Visible = isHome
     playerPage.Visible = not isHome
 
-    homeTab.BackgroundColor3 = isHome and COLORS.Accent or COLORS.Card
-    playerTab.BackgroundColor3 = isHome and COLORS.Card or COLORS.Accent
+    homeTab.BackgroundColor3 =
+        isHome and COLORS.Accent or COLORS.Card
+
+    playerTab.BackgroundColor3 =
+        isHome and COLORS.Card or COLORS.Accent
 end
 
 homeTab.Activated:Connect(function()
@@ -282,51 +326,66 @@ end)
 -- HOME PAGE
 --==================================================
 
-label(homePage, "الصفحة الرئيسية",
-    UDim2.new(1, -30, 0, 34),
-    UDim2.fromOffset(16, 12), 20, COLORS.Text)
+label(
+    homePage, "الصفحة الرئيسية",
+    UDim2.new(1, -24, 0, 30),
+    UDim2.fromOffset(12, 9),
+    18, COLORS.Text
+)
 
-label(homePage, "اختَر العملية التي تريد تنفيذها",
-    UDim2.new(1, -30, 0, 23),
-    UDim2.fromOffset(16, 44), 11, COLORS.Muted)
+label(
+    homePage, "اختَر العملية التي تريد تنفيذها",
+    UDim2.new(1, -24, 0, 20),
+    UDim2.fromOffset(12, 37),
+    10, COLORS.Muted
+)
 
-local function makeActionCard(y, title, description, buttonText, accent)
+local function makeActionCard(
+    y, title, description, buttonText, accent
+)
     local card = new("Frame", {
-        Size = UDim2.new(1, -32, 0, 76),
-        Position = UDim2.fromOffset(16, y),
+        Size = UDim2.new(1, -24, 0, 67),
+        Position = UDim2.fromOffset(12, y),
         BackgroundColor3 = COLORS.Panel,
         BorderSizePixel = 0,
     }, homePage)
 
-    round(card, 11)
+    round(card, 10)
     outline(card, COLORS.Border)
 
     new("Frame", {
-        Size = UDim2.fromOffset(3, 42),
-        Position = UDim2.fromOffset(0, 17),
+        Size = UDim2.fromOffset(3, 38),
+        Position = UDim2.fromOffset(0, 14),
         BackgroundColor3 = accent,
         BorderSizePixel = 0,
     }, card)
 
-    label(card, title,
-        UDim2.new(1, -145, 0, 25),
-        UDim2.fromOffset(13, 10), 13, COLORS.Text)
-
-    label(card, description,
-        UDim2.new(1, -145, 0, 24),
-        UDim2.fromOffset(13, 37), 10, COLORS.Muted)
-
-    local btn = makeButton(
-        card, buttonText,
-        UDim2.fromOffset(108, 36),
-        UDim2.new(1, -120, 0.5, -18), accent
+    label(
+        card, title,
+        UDim2.new(1, -125, 0, 23),
+        UDim2.fromOffset(10, 8),
+        12, COLORS.Text
     )
 
-    return btn
+    label(
+        card, description,
+        UDim2.new(1, -125, 0, 22),
+        UDim2.fromOffset(10, 32),
+        9, COLORS.Muted
+    )
+
+    return makeButton(
+        card, buttonText,
+        UDim2.fromOffset(88, 32),
+        UDim2.new(1, -100, 0.5, -16),
+        accent
+    )
 end
 
--- Original coordinates
-local posInsidePrison = CFrame.new(1754.04, 544.61, -367.02)
+-- Original coordinates preserved
+
+local posInsidePrison =
+    CFrame.new(1754.04, 544.61, -367.02)
 
 local spawnPos = Vector3.new(
     2042.36865234375,
@@ -338,22 +397,28 @@ local posOriginalSpawn = CFrame.new(
     spawnPos.X, spawnPos.Y, spawnPos.Z
 )
 
-local targetCoord = CFrame.new(34918.96, 19915.68, 4876.06)
+local targetCoord =
+    CFrame.new(34918.96, 19915.68, 4876.06)
 
 local function teleportAndLock(cf)
     local character = player.Character
+
     if not character then
         return
     end
 
-    local root = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local root =
+        character:FindFirstChild("HumanoidRootPart")
+
+    local humanoid =
+        character:FindFirstChildOfClass("Humanoid")
 
     if not root or not humanoid then
         return
     end
 
     humanoid.PlatformStand = true
+
     root.AssemblyLinearVelocity = Vector3.zero
     root.AssemblyAngularVelocity = Vector3.zero
 
@@ -366,21 +431,27 @@ local function teleportAndLock(cf)
 end
 
 local prisonBtn = makeActionCard(
-    78, "الانتقال إلى السجن",
-    "انتقال إلى الإحداثيات المحددة",
-    "انتقال", COLORS.Blue
+    65,
+    "الانتقال إلى السجن",
+    "الإحداثيات المحددة للسجن",
+    "انتقال",
+    COLORS.Blue
 )
 
 local spawnBtn = makeActionCard(
-    164, "الرجوع إلى السبون",
-    "العودة إلى نقطة السبون المحفوظة",
-    "رجوع", COLORS.Red
+    140,
+    "الرجوع إلى السبون",
+    "العودة إلى نقطة السبون",
+    "رجوع",
+    COLORS.Red
 )
 
 local targetBtn = makeActionCard(
-    250, "الإحداثيات الجديدة",
+    215,
+    "الإحداثيات الجديدة",
     "الانتقال إلى الموقع المحدد",
-    "انتقال", COLORS.Green
+    "انتقال",
+    COLORS.Green
 )
 
 prisonBtn.Activated:Connect(function()
@@ -399,81 +470,101 @@ end)
 -- PLAYER PAGE
 --==================================================
 
-label(playerPage, "صفحة اللاعب",
-    UDim2.new(1, -30, 0, 34),
-    UDim2.fromOffset(16, 12), 20, COLORS.Text)
+label(
+    playerPage, "صفحة اللاعب",
+    UDim2.new(1, -24, 0, 30),
+    UDim2.fromOffset(12, 9),
+    18, COLORS.Text
+)
 
-label(playerPage, "ابحث عن لاعب موجود في السيرفر الحالي",
-    UDim2.new(1, -30, 0, 23),
-    UDim2.fromOffset(16, 44), 11, COLORS.Muted)
+label(
+    playerPage, "ابحث عن لاعب في السيرفر الحالي",
+    UDim2.new(1, -24, 0, 20),
+    UDim2.fromOffset(12, 37),
+    10, COLORS.Muted
+)
 
 local searchBox = new("TextBox", {
     Name = "PlayerSearch",
-    Size = UDim2.new(1, -120, 0, 38),
-    Position = UDim2.fromOffset(16, 76),
+    Size = UDim2.new(1, -106, 0, 34),
+    Position = UDim2.fromOffset(12, 65),
     BackgroundColor3 = COLORS.Input,
     TextColor3 = COLORS.Text,
     PlaceholderColor3 = COLORS.Muted,
-    PlaceholderText = "اكتب Username أو Display Name...",
+    PlaceholderText = "Username أو Display Name...",
     Text = "",
-    TextSize = 12,
+    TextSize = 11,
     Font = Enum.Font.Gotham,
     ClearTextOnFocus = false,
     BorderSizePixel = 0,
 }, playerPage)
 
-round(searchBox, 9)
+round(searchBox, 8)
 outline(searchBox, COLORS.Border)
 
 local searchBtn = makeButton(
     playerPage, "بحث",
-    UDim2.fromOffset(80, 38),
-    UDim2.new(1, -96, 0, 76), COLORS.Accent
+    UDim2.fromOffset(76, 34),
+    UDim2.new(1, -88, 0, 65),
+    COLORS.Accent
 )
 
--- Profile card
+-- Player profile
+
 local profileCard = new("Frame", {
-    Size = UDim2.new(1, -32, 0, 105),
-    Position = UDim2.fromOffset(16, 124),
+    Size = UDim2.new(1, -24, 0, 91),
+    Position = UDim2.fromOffset(12, 108),
     BackgroundColor3 = COLORS.Panel,
     BorderSizePixel = 0,
 }, playerPage)
 
-round(profileCard, 11)
+round(profileCard, 10)
 outline(profileCard, COLORS.Border)
 
 local avatar = new("ImageLabel", {
     Name = "Avatar",
-    Size = UDim2.fromOffset(76, 76),
-    Position = UDim2.fromOffset(12, 14),
+    Size = UDim2.fromOffset(65, 65),
+    Position = UDim2.fromOffset(10, 13),
     BackgroundColor3 = COLORS.Card,
     Image = "",
     ScaleType = Enum.ScaleType.Crop,
     BorderSizePixel = 0,
 }, profileCard)
 
-round(avatar, 12)
+round(avatar, 10)
 
-local nameLabel = label(profileCard, "لم يتم تحديد لاعب",
-    UDim2.new(1, -115, 0, 28),
-    UDim2.fromOffset(101, 20), 14, COLORS.Text)
+local nameLabel = label(
+    profileCard, "لم يتم تحديد لاعب",
+    UDim2.new(1, -98, 0, 24),
+    UDim2.fromOffset(86, 12),
+    12, COLORS.Text
+)
 
-local usernameLabel = label(profileCard, "Username: —",
-    UDim2.new(1, -115, 0, 22),
-    UDim2.fromOffset(101, 49), 11, COLORS.Muted)
+local usernameLabel = label(
+    profileCard, "Username: —",
+    UDim2.new(1, -98, 0, 20),
+    UDim2.fromOffset(86, 36),
+    10, COLORS.Muted
+)
 
-local inventoryCountLabel = label(profileCard, "الأدوات: —",
-    UDim2.new(1, -115, 0, 20),
-    UDim2.fromOffset(101, 72), 10, COLORS.Green)
+local inventoryCountLabel = label(
+    profileCard, "الأدوات: —",
+    UDim2.new(1, -98, 0, 20),
+    UDim2.fromOffset(86, 57),
+    9, COLORS.Green
+)
 
-label(playerPage, "INVENTORY",
-    UDim2.new(1, -32, 0, 20),
-    UDim2.fromOffset(16, 237), 10, COLORS.Muted)
+label(
+    playerPage, "INVENTORY",
+    UDim2.new(1, -24, 0, 18),
+    UDim2.fromOffset(12, 207),
+    9, COLORS.Muted
+)
 
 local inventoryList = new("ScrollingFrame", {
     Name = "InventoryList",
-    Size = UDim2.new(1, -32, 0, 78),
-    Position = UDim2.fromOffset(16, 259),
+    Size = UDim2.new(1, -24, 0, 91),
+    Position = UDim2.fromOffset(12, 228),
     BackgroundColor3 = COLORS.Panel,
     BorderSizePixel = 0,
     ScrollBarThickness = 4,
@@ -486,16 +577,20 @@ round(inventoryList, 9)
 outline(inventoryList, COLORS.Border)
 
 new("UIPadding", {
-    PaddingTop = UDim.new(0, 6),
-    PaddingBottom = UDim.new(0, 6),
-    PaddingLeft = UDim.new(0, 8),
-    PaddingRight = UDim.new(0, 8),
+    PaddingTop = UDim.new(0, 5),
+    PaddingBottom = UDim.new(0, 5),
+    PaddingLeft = UDim.new(0, 7),
+    PaddingRight = UDim.new(0, 7),
 }, inventoryList)
 
-local inventoryLayout = new("UIListLayout", {
+new("UIListLayout", {
     Padding = UDim.new(0, 4),
     SortOrder = Enum.SortOrder.LayoutOrder,
 }, inventoryList)
+
+--==================================================
+-- PLAYER SEARCH
+--==================================================
 
 local function clearInventory()
     for _, child in ipairs(inventoryList:GetChildren()) do
@@ -507,12 +602,12 @@ end
 
 local function addInventoryItem(text, color)
     local itemLabel = new("TextLabel", {
-        Size = UDim2.new(1, -4, 0, 25),
+        Size = UDim2.new(1, -4, 0, 24),
         BackgroundColor3 = COLORS.Card,
         BackgroundTransparency = 0.15,
         Text = "   " .. text,
         TextColor3 = color or COLORS.Text,
-        TextSize = 11,
+        TextSize = 10,
         Font = Enum.Font.Gotham,
         TextXAlignment = Enum.TextXAlignment.Left,
         BorderSizePixel = 0,
@@ -528,7 +623,6 @@ local function findPlayer(name)
         return nil
     end
 
-    -- Exact username or display name first
     for _, target in ipairs(Players:GetPlayers()) do
         if target.Name:lower() == name:lower()
             or target.DisplayName:lower() == name:lower() then
@@ -536,7 +630,6 @@ local function findPlayer(name)
         end
     end
 
-    -- Allow partial matches if there is only one result
     local match = nil
 
     for _, target in ipairs(Players:GetPlayers()) do
@@ -544,7 +637,7 @@ local function findPlayer(name)
             or target.DisplayName:lower():find(name:lower(), 1, true) then
 
             if match then
-                return nil -- Ambiguous result
+                return nil
             end
 
             match = target
@@ -561,10 +654,15 @@ local function inspectPlayer()
 
     if not target then
         avatar.Image = ""
-        nameLabel.Text = "اللاعب غير موجود أو الاسم غير واضح"
-        usernameLabel.Text = "تأكد من الاسم وحاول مجدداً"
+        nameLabel.Text = "اللاعب غير موجود"
+        usernameLabel.Text = "تحقق من الاسم وحاول مجدداً"
         inventoryCountLabel.Text = "الأدوات: —"
-        addInventoryItem("لم يتم العثور على لاعب", COLORS.Red)
+
+        addInventoryItem(
+            "لم يتم العثور على لاعب مطابق",
+            COLORS.Red
+        )
+
         return
     end
 
@@ -572,7 +670,6 @@ local function inspectPlayer()
     usernameLabel.Text = "@" .. target.Name
     inventoryCountLabel.Text = "جارٍ تحميل البيانات..."
 
-    -- Get the avatar thumbnail
     task.spawn(function()
         local success, imageUrl = pcall(function()
             local url = Players:GetUserThumbnailAsync(
@@ -590,8 +687,6 @@ local function inspectPlayer()
     end)
 
     local items = {}
-
-    -- Backpack tools visible to this LocalScript
     local backpack = target:FindFirstChildOfClass("Backpack")
 
     if backpack then
@@ -602,7 +697,6 @@ local function inspectPlayer()
         end
     end
 
-    -- Equipped tools
     local character = target.Character
 
     if character then
@@ -613,16 +707,20 @@ local function inspectPlayer()
         end
     end
 
-    inventoryCountLabel.Text = "الأدوات الظاهرة: " .. #items
+    inventoryCountLabel.Text =
+        "الأدوات الظاهرة: " .. #items
 
     if #items == 0 then
         addInventoryItem(
-            "لا توجد أدوات ظاهرة أو أن المحتويات غير متاحة",
+            "لا توجد أدوات ظاهرة أو المحتويات غير متاحة",
             COLORS.Muted
         )
     else
         for _, itemName in ipairs(items) do
-            addInventoryItem("◆   " .. itemName, COLORS.Text)
+            addInventoryItem(
+                "◆   " .. itemName,
+                COLORS.Text
+            )
         end
     end
 end
@@ -636,25 +734,23 @@ searchBox.FocusLost:Connect(function(enterPressed)
 end)
 
 --==================================================
--- ONE FLOATING BUTTON: HIDE / SHOW EVERYTHING
+-- SINGLE HIDE / SHOW BUTTON
 --==================================================
 
 local toggleBtn = makeButton(
     gui, "✕",
-    UDim2.fromOffset(48, 48),
-    UDim2.new(0, 18, 0.5, -24),
+    UDim2.fromOffset(42, 42),
+    UDim2.new(0, 14, 0.5, -21),
     COLORS.Accent
 )
 
 toggleBtn.Name = "ToggleButton"
-toggleBtn.TextSize = 20
+toggleBtn.TextSize = 18
 toggleBtn.ZIndex = 10
-toggleBtn.Active = true
 
-round(toggleBtn, 15)
+round(toggleBtn, 13)
 outline(toggleBtn, COLORS.Border)
 
--- The button stays visible when the entire window is hidden.
 toggleBtn.Activated:Connect(function()
     window.Visible = not window.Visible
 
@@ -667,7 +763,7 @@ toggleBtn.Activated:Connect(function()
     end
 end)
 
--- Start on the home page
+-- Initial page
 switchPage("Home")
 
-print("Control Center loaded successfully")
+print("MILLER PANEL loaded | Script under testing")
