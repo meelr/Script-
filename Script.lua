@@ -767,3 +767,119 @@ end)
 switchPage("Home")
 
 print("MILLER PANEL loaded | Script under testing")
+
+
+-- MILLER PANEL | Target Selector
+-- Add this code to your existing LocalScript.
+-- It uses the existing: player, Players, playerPage,
+-- searchBox, and searchBtn variables.
+
+local UserInputService = game:GetService("UserInputService")
+local mouse = player:GetMouse()
+
+local selectingTarget = false
+local selectedTarget = nil
+
+-- Target selector button
+local targetButton = Instance.new("TextButton")
+targetButton.Name = "TargetSelectorButton"
+targetButton.Size = UDim2.new(1, -32, 0, 34)
+targetButton.Position = UDim2.fromOffset(16, 345)
+targetButton.BackgroundColor3 = Color3.fromRGB(111, 91, 255)
+targetButton.TextColor3 = Color3.new(1, 1, 1)
+targetButton.TextSize = 12
+targetButton.Font = Enum.Font.GothamSemibold
+targetButton.Text = "تحديد لاعب بالنقر"
+targetButton.Parent = playerPage
+
+Instance.new("UICorner", targetButton).CornerRadius =
+    UDim.new(0, 8)
+
+local targetStatus = Instance.new("TextLabel")
+targetStatus.Name = "TargetStatus"
+targetStatus.Size = UDim2.new(1, -32, 0, 24)
+targetStatus.Position = UDim2.fromOffset(16, 319)
+targetStatus.BackgroundTransparency = 1
+targetStatus.TextColor3 = Color3.fromRGB(145, 155, 175)
+targetStatus.TextSize = 11
+targetStatus.Font = Enum.Font.Gotham
+targetStatus.Text = "الهدف الحالي: لا يوجد"
+targetStatus.TextXAlignment = Enum.TextXAlignment.Left
+targetStatus.Parent = playerPage
+
+local function getPlayerFromTarget(part)
+    if not part then
+        return nil
+    end
+
+    local model = part:FindFirstAncestorOfClass("Model")
+    if not model then
+        return nil
+    end
+
+    return Players:GetPlayerFromCharacter(model)
+end
+
+targetButton.Activated:Connect(function()
+    selectingTarget = not selectingTarget
+
+    if selectingTarget then
+        targetButton.Text = "وضع التحديد مفعّل — انقر على لاعب"
+        targetButton.BackgroundColor3 =
+            Color3.fromRGB(42, 190, 135)
+    else
+        targetButton.Text = "تحديد لاعب بالنقر"
+        targetButton.BackgroundColor3 =
+            Color3.fromRGB(111, 91, 255)
+    end
+end)
+
+mouse.Button1Down:Connect(function()
+    if not selectingTarget then
+        return
+    end
+
+    local target = getPlayerFromTarget(mouse.Target)
+
+    if not target or target == player then
+        return
+    end
+
+    selectedTarget = target
+    selectingTarget = false
+
+    -- Update the existing player search field
+    searchBox.Text = target.Name
+
+    targetStatus.Text = "الهدف الحالي: " .. target.DisplayName
+    targetButton.Text = "تحديد لاعب بالنقر"
+    targetButton.BackgroundColor3 =
+        Color3.fromRGB(111, 91, 255)
+
+    -- Open the player page and run its existing search
+    playerPage.Visible = true
+
+    if homePage then
+        homePage.Visible = false
+    end
+
+    if homeTab then
+        homeTab.BackgroundColor3 =
+            Color3.fromRGB(28, 34, 48)
+    end
+
+    if playerTab then
+        playerTab.BackgroundColor3 =
+            Color3.fromRGB(111, 91, 255)
+    end
+
+    searchBtn:Activate()
+end)
+
+-- Clear the selected target if they leave the server
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if selectedTarget == leavingPlayer then
+        selectedTarget = nil
+        targetStatus.Text = "الهدف الحالي: لا يوجد"
+    end
+end)
