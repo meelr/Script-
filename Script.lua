@@ -384,7 +384,7 @@ end
 
 -- Original coordinates preserved
 
-local posInsidePrison = CFrame.new(2150.88, 1.63, -157.73)
+local posInsidePrison = CFrame.new(2103.50 ,4.77, -151.28)
 
 local spawnPos = Vector3.new(
     2042.36865234375,
