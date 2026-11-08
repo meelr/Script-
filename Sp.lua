@@ -1,13 +1,16 @@
 
---// MILLER PANEL | CONTROL CENTER
---// Developer: Miller
---// Status: Script Under Testing
+--==================================================
+-- MILLER PANEL | CONTROL CENTER
+-- Developer: Miller
+-- Status: Script Under Testing
+--==================================================
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+local mouse = player:GetMouse()
 
 --==================================================
 -- REMOVE OLD GUI
@@ -24,17 +27,17 @@ end
 
 local COLORS = {
     Background = Color3.fromRGB(13, 16, 24),
-    Panel      = Color3.fromRGB(20, 24, 35),
-    Sidebar    = Color3.fromRGB(17, 20, 30),
-    Card       = Color3.fromRGB(28, 34, 48),
-    Input      = Color3.fromRGB(24, 29, 42),
-    Accent     = Color3.fromRGB(111, 91, 255),
-    Blue       = Color3.fromRGB(60, 140, 255),
-    Green      = Color3.fromRGB(42, 190, 135),
-    Red        = Color3.fromRGB(235, 80, 100),
-    Text       = Color3.fromRGB(240, 243, 250),
-    Muted      = Color3.fromRGB(145, 155, 175),
-    Border     = Color3.fromRGB(47, 55, 75),
+    Panel = Color3.fromRGB(20, 24, 35),
+    Sidebar = Color3.fromRGB(17, 20, 30),
+    Card = Color3.fromRGB(28, 34, 48),
+    Input = Color3.fromRGB(24, 29, 42),
+    Accent = Color3.fromRGB(111, 91, 255),
+    Blue = Color3.fromRGB(60, 140, 255),
+    Green = Color3.fromRGB(42, 190, 135),
+    Red = Color3.fromRGB(235, 80, 100),
+    Text = Color3.fromRGB(240, 243, 250),
+    Muted = Color3.fromRGB(145, 155, 175),
+    Border = Color3.fromRGB(47, 55, 75),
 }
 
 --==================================================
@@ -109,11 +112,14 @@ local gui = new("ScreenGui", {
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 }, playerGui)
 
--- Compact unified window
+--==================================================
+-- RESPONSIVE WINDOW
+--==================================================
+
 local window = new("Frame", {
     Name = "MainWindow",
-    Size = UDim2.fromOffset(520, 360),
-    Position = UDim2.new(0.5, -260, 0.5, -180),
+    Size = UDim2.fromOffset(460, 380),
+    Position = UDim2.new(0.5, -230, 0.5, -190),
     BackgroundColor3 = COLORS.Background,
     BorderSizePixel = 0,
     ClipsDescendants = true,
@@ -122,6 +128,34 @@ local window = new("Frame", {
 
 round(window, 14)
 outline(window, COLORS.Border)
+
+local camera = workspace.CurrentCamera
+
+local windowScale = new("UIScale", {
+    Scale = 0.9,
+}, window)
+
+local function updateWindowScale()
+    camera = workspace.CurrentCamera
+
+    if not camera then
+        return
+    end
+
+    local viewport = camera.ViewportSize
+
+    windowScale.Scale = math.min(
+        0.9,
+        (viewport.X - 20) / 460,
+        (viewport.Y - 20) / 380
+    )
+end
+
+updateWindowScale()
+
+camera:GetPropertyChangedSignal("ViewportSize"):Connect(
+    updateWindowScale
+)
 
 --==================================================
 -- TOP BAR
@@ -166,33 +200,42 @@ label(
 -- WINDOW DRAGGING
 --==================================================
 
-local dragging = false
-local dragStart
-local startPosition
+local draggingWindow = false
+local windowDragInput
+local windowDragStart
+local windowStartPosition
 
 topbar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
 
-        dragging = true
-        dragStart = input.Position
-        startPosition = window.Position
+        draggingWindow = true
+        windowDragInput = input
+        windowDragStart = input.Position
+        windowStartPosition = window.Position
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if dragging and (
-        input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch
-    ) then
+    if not draggingWindow then
+        return
+    end
 
-        local delta = input.Position - dragStart
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input == windowDragInput then
+
+        local delta = input.Position - windowDragStart
+        local scale = windowScale.Scale
+
+        if scale <= 0 then
+            return
+        end
 
         window.Position = UDim2.new(
-            startPosition.X.Scale,
-            startPosition.X.Offset + delta.X,
-            startPosition.Y.Scale,
-            startPosition.Y.Offset + delta.Y
+            windowStartPosition.X.Scale,
+            windowStartPosition.X.Offset + delta.X / scale,
+            windowStartPosition.Y.Scale,
+            windowStartPosition.Y.Offset + delta.Y / scale
         )
     end
 end)
@@ -201,7 +244,8 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
 
-        dragging = false
+        draggingWindow = false
+        windowDragInput = nil
     end
 end)
 
@@ -382,9 +426,13 @@ local function makeActionCard(
     )
 end
 
--- Original coordinates preserved
+--==================================================
+-- ORIGINAL COORDINATES
+--==================================================
 
-local posInsidePrison = CFrame.new(2103.50 ,4.77, -151.28)
+local posInsidePrison = CFrame.new(
+    2103.50, 4.77, -151.28
+)
 
 local spawnPos = Vector3.new(
     2042.36865234375,
@@ -393,11 +441,20 @@ local spawnPos = Vector3.new(
 )
 
 local posOriginalSpawn = CFrame.new(
-    spawnPos.X, spawnPos.Y, spawnPos.Z
+    spawnPos.X,
+    spawnPos.Y,
+    spawnPos.Z
 )
 
-local targetCoord =
-    CFrame.new(34918.96, 19915.68, 4876.06)
+local targetCoord = CFrame.new(
+    34918.96,
+    19915.68,
+    4876.06
+)
+
+--==================================================
+-- TELEPORT FUNCTION
+--==================================================
 
 local function teleportAndLock(cf)
     local character = player.Character
@@ -428,6 +485,10 @@ local function teleportAndLock(cf)
 
     humanoid.PlatformStand = false
 end
+
+--==================================================
+-- HOME ACTION BUTTONS
+--==================================================
 
 local prisonBtn = makeActionCard(
     65,
@@ -508,7 +569,9 @@ local searchBtn = makeButton(
     COLORS.Accent
 )
 
--- Player profile
+--==================================================
+-- PLAYER PROFILE
+--==================================================
 
 local profileCard = new("Frame", {
     Size = UDim2.new(1, -24, 0, 91),
@@ -562,7 +625,7 @@ label(
 
 local inventoryList = new("ScrollingFrame", {
     Name = "InventoryList",
-    Size = UDim2.new(1, -24, 0, 91),
+    Size = UDim2.new(1, -24, 0, 40),
     Position = UDim2.fromOffset(12, 228),
     BackgroundColor3 = COLORS.Panel,
     BorderSizePixel = 0,
@@ -588,7 +651,7 @@ new("UIListLayout", {
 }, inventoryList)
 
 --==================================================
--- PLAYER SEARCH
+-- PLAYER SEARCH FUNCTIONS
 --==================================================
 
 local function clearInventory()
@@ -625,6 +688,7 @@ local function findPlayer(name)
     for _, target in ipairs(Players:GetPlayers()) do
         if target.Name:lower() == name:lower()
             or target.DisplayName:lower() == name:lower() then
+
             return target
         end
     end
@@ -733,78 +797,33 @@ searchBox.FocusLost:Connect(function(enterPressed)
 end)
 
 --==================================================
--- SINGLE HIDE / SHOW BUTTON
+-- TARGET SELECTOR
 --==================================================
-
-local toggleBtn = makeButton(
-    gui, "✕",
-    UDim2.fromOffset(42, 42),
-    UDim2.new(0, 14, 0.5, -21),
-    COLORS.Accent
-)
-
-toggleBtn.Name = "ToggleButton"
-toggleBtn.TextSize = 18
-toggleBtn.ZIndex = 10
-
-round(toggleBtn, 13)
-outline(toggleBtn, COLORS.Border)
-
-toggleBtn.Activated:Connect(function()
-    window.Visible = not window.Visible
-
-    if window.Visible then
-        toggleBtn.Text = "✕"
-        toggleBtn.BackgroundColor3 = COLORS.Accent
-    else
-        toggleBtn.Text = "☰"
-        toggleBtn.BackgroundColor3 = COLORS.Green
-    end
-end)
-
--- Initial page
-switchPage("Home")
-
-print("MILLER PANEL loaded | Script under testing")
-
-
--- MILLER PANEL | Target Selector
--- Add this code to your existing LocalScript.
--- It uses the existing: player, Players, playerPage,
--- searchBox, and searchBtn variables.
-
-local UserInputService = game:GetService("UserInputService")
-local mouse = player:GetMouse()
 
 local selectingTarget = false
 local selectedTarget = nil
 
--- Target selector button
-local targetButton = Instance.new("TextButton")
-targetButton.Name = "TargetSelectorButton"
-targetButton.Size = UDim2.new(1, -32, 0, 34)
-targetButton.Position = UDim2.fromOffset(16, 345)
-targetButton.BackgroundColor3 = Color3.fromRGB(111, 91, 255)
-targetButton.TextColor3 = Color3.new(1, 1, 1)
-targetButton.TextSize = 12
-targetButton.Font = Enum.Font.GothamSemibold
-targetButton.Text = "تحديد لاعب بالنقر"
-targetButton.Parent = playerPage
+local targetStatus = new("TextLabel", {
+    Name = "TargetStatus",
+    Size = UDim2.new(1, -32, 0, 22),
+    Position = UDim2.fromOffset(16, 273),
+    BackgroundTransparency = 1,
+    TextColor3 = COLORS.Muted,
+    TextSize = 10,
+    Font = Enum.Font.Gotham,
+    Text = "الهدف الحالي: لا يوجد",
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, playerPage)
 
-Instance.new("UICorner", targetButton).CornerRadius =
-    UDim.new(0, 8)
+local targetSelectButton = makeButton(
+    playerPage,
+    "تحديد لاعب بالنقر",
+    UDim2.new(1, -32, 0, 30),
+    UDim2.fromOffset(16, 298),
+    COLORS.Accent
+)
 
-local targetStatus = Instance.new("TextLabel")
-targetStatus.Name = "TargetStatus"
-targetStatus.Size = UDim2.new(1, -32, 0, 24)
-targetStatus.Position = UDim2.fromOffset(16, 319)
-targetStatus.BackgroundTransparency = 1
-targetStatus.TextColor3 = Color3.fromRGB(145, 155, 175)
-targetStatus.TextSize = 11
-targetStatus.Font = Enum.Font.Gotham
-targetStatus.Text = "الهدف الحالي: لا يوجد"
-targetStatus.TextXAlignment = Enum.TextXAlignment.Left
-targetStatus.Parent = playerPage
+targetSelectButton.Name = "TargetSelectorButton"
 
 local function getPlayerFromTarget(part)
     if not part then
@@ -812,6 +831,7 @@ local function getPlayerFromTarget(part)
     end
 
     local model = part:FindFirstAncestorOfClass("Model")
+
     if not model then
         return nil
     end
@@ -819,22 +839,28 @@ local function getPlayerFromTarget(part)
     return Players:GetPlayerFromCharacter(model)
 end
 
-targetButton.Activated:Connect(function()
+targetSelectButton.Activated:Connect(function()
     selectingTarget = not selectingTarget
 
     if selectingTarget then
-        targetButton.Text = "وضع التحديد مفعّل — انقر على لاعب"
-        targetButton.BackgroundColor3 =
-            Color3.fromRGB(42, 190, 135)
+        targetSelectButton.Text =
+            "وضع التحديد مفعّل — انقر على لاعب"
+
+        targetSelectButton.BackgroundColor3 = COLORS.Green
     else
-        targetButton.Text = "تحديد لاعب بالنقر"
-        targetButton.BackgroundColor3 =
-            Color3.fromRGB(111, 91, 255)
+        targetSelectButton.Text = "تحديد لاعب بالنقر"
+
+        targetSelectButton.BackgroundColor3 = COLORS.Accent
     end
 end)
 
 mouse.Button1Down:Connect(function()
     if not selectingTarget then
+        return
+    end
+
+    -- Prevent selecting through the panel itself
+    if UserInputService:GetFocusedTextBox() then
         return
     end
 
@@ -847,38 +873,145 @@ mouse.Button1Down:Connect(function()
     selectedTarget = target
     selectingTarget = false
 
-    -- Update the existing player search field
     searchBox.Text = target.Name
 
-    targetStatus.Text = "الهدف الحالي: " .. target.DisplayName
-    targetButton.Text = "تحديد لاعب بالنقر"
-    targetButton.BackgroundColor3 =
-        Color3.fromRGB(111, 91, 255)
+    targetStatus.Text =
+        "الهدف الحالي: " .. target.DisplayName
 
-    -- Open the player page and run its existing search
-    playerPage.Visible = true
+    targetSelectButton.Text = "تحديد لاعب بالنقر"
+    targetSelectButton.BackgroundColor3 = COLORS.Accent
 
-    if homePage then
-        homePage.Visible = false
-    end
-
-    if homeTab then
-        homeTab.BackgroundColor3 =
-            Color3.fromRGB(28, 34, 48)
-    end
-
-    if playerTab then
-        playerTab.BackgroundColor3 =
-            Color3.fromRGB(111, 91, 255)
-    end
+    switchPage("Player")
 
     searchBtn:Activate()
 end)
 
--- Clear the selected target if they leave the server
+--==================================================
+-- CLEAR TARGET WHEN PLAYER LEAVES
+--==================================================
+
 Players.PlayerRemoving:Connect(function(leavingPlayer)
     if selectedTarget == leavingPlayer then
         selectedTarget = nil
+
         targetStatus.Text = "الهدف الحالي: لا يوجد"
     end
 end)
+
+--==================================================
+-- DRAGGABLE TOGGLE BUTTON
+--==================================================
+
+local toggleBtn = makeButton(
+    gui,
+    "✕",
+    UDim2.fromOffset(42, 42),
+    UDim2.new(0, 14, 0.5, -21),
+    COLORS.Accent
+)
+
+toggleBtn.Name = "ToggleButton"
+toggleBtn.TextSize = 18
+toggleBtn.ZIndex = 10
+toggleBtn.Active = true
+
+round(toggleBtn, 13)
+outline(toggleBtn, COLORS.Border)
+
+local draggingToggle = false
+local toggleDragInput
+local toggleDragStart
+local toggleStartPosition
+local toggleMoved = false
+
+toggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        draggingToggle = true
+        toggleDragInput = input
+        toggleDragStart = input.Position
+        toggleStartPosition = toggleBtn.Position
+        toggleMoved = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if not draggingToggle then
+        return
+    end
+
+    if input.UserInputType ~= Enum.UserInputType.MouseMovement
+        and input ~= toggleDragInput then
+
+        return
+    end
+
+    local delta = input.Position - toggleDragStart
+
+    if delta.Magnitude > 5 then
+        toggleMoved = true
+    end
+
+    camera = workspace.CurrentCamera
+
+    if not camera then
+        return
+    end
+
+    local viewport = camera.ViewportSize
+
+    local newX = toggleStartPosition.X.Offset + delta.X
+    local newY = toggleStartPosition.Y.Offset + delta.Y
+
+    newX = math.clamp(
+        newX,
+        0,
+        viewport.X - toggleBtn.AbsoluteSize.X
+    )
+
+    newY = math.clamp(
+        newY,
+        0,
+        viewport.Y - toggleBtn.AbsoluteSize.Y
+    )
+
+    toggleBtn.Position = UDim2.fromOffset(newX, newY)
+end)
+
+local function toggleWindow()
+    window.Visible = not window.Visible
+
+    if window.Visible then
+        toggleBtn.Text = "✕"
+        toggleBtn.BackgroundColor3 = COLORS.Accent
+    else
+        toggleBtn.Text = "☰"
+        toggleBtn.BackgroundColor3 = COLORS.Green
+    end
+end
+
+UserInputService.InputEnded:Connect(function(input)
+    if not draggingToggle then
+        return
+    end
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        if not toggleMoved then
+            toggleWindow()
+        end
+
+        draggingToggle = false
+        toggleDragInput = nil
+    end
+end)
+
+--==================================================
+-- INITIAL PAGE
+--==================================================
+
+switchPage("Home")
+
+print("MILLER PANEL loaded | Script under testing")
